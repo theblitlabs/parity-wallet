@@ -1,6 +1,6 @@
-# StakeWallet Hardhat Project
+# Parity Wallet
 
-This project demonstrates a Hardhat use case for a wallet system contract named **StakeWallet**.  
+This project demonstrates a Hardhat use case for a wallet system contract named **ParityWallet**.  
 The contract allows participants (runners, solvers, creators, etc.) to:
 
 - **Add Funds:** Deposit tokens into a wallet identified by a device ID along with a designated withdrawal address.
@@ -14,8 +14,8 @@ The contract allows participants (runners, solvers, creators, etc.) to:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your_username/your_repo.git
-cd your_repo
+git clone https://github.com/theblitlabs/parity-wallet.git
+cd parity-wallet
 ```
 
 ### 2. Install Dependencies
@@ -122,5 +122,3 @@ npx hardhat node
 ```bash
 npx hardhat test
 ```
-
-Happy coding!
