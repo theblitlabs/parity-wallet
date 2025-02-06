@@ -5,16 +5,14 @@ import "@nomicfoundation/hardhat-toolbox";
 dotenv.config();
 
 const config: HardhatUserConfig = {
-  solidity: {
-    version: "0.8.28",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200,
-      },
-    },
-  },
+  solidity: "0.8.28",
   networks: {
+    hardhat: {
+      chainId: 31337,
+    },
+    localhost: {
+      chainId: 31337,
+    },
     sepolia: {
       url:
         process.env.SEPOLIA_RPC ||
