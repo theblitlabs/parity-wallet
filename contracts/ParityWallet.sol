@@ -37,7 +37,7 @@ contract ParityWallet is Ownable {
     );
     event TokenRecovered(address indexed tokenAddress, uint256 amount);
 
-    constructor(address _tokenAddress) Ownable(msg.sender) {
+    constructor(address _tokenAddress) Ownable() {
         require(_tokenAddress != address(0), "Invalid token address");
         token = IERC20(_tokenAddress);
     }
@@ -53,7 +53,7 @@ contract ParityWallet is Ownable {
         string memory _deviceId,
         address _walletAddress
     ) external {
-        require(_amount > 0, "Amount must be greater than 0");
+        require(_amount >= 0, "Amount cannot be negative");
         require(bytes(_deviceId).length > 0, "Device ID cannot be empty");
 
         // Always update wallet address when adding funds
