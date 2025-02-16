@@ -9,11 +9,10 @@ contract DeployScript is Script {
     function setUp() public {}
 
     function run() external {
-        // Ensure we're only running on local network
-        require(block.chainid == 31337, "This script is intended to run only on local Anvil network");
+        uint256 deployerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
 
-        console.log("Deploying to local Anvil chain (chainId: 31337)");
-        vm.broadcast(0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80);
+        console.log("Starting deployment...");
+        vm.startBroadcast(deployerPrivateKey);
 
         // Deploy mock token first
         MockParityToken mockToken = new MockParityToken();
@@ -22,6 +21,8 @@ contract DeployScript is Script {
         // Deploy wallet using mock token
         ParityWallet wallet = new ParityWallet(address(mockToken));
         console.log("ParityWallet deployed to:", address(wallet));
+
+        vm.stopBroadcast();
     }
 }
 
