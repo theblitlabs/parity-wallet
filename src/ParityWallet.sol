@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.28;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import "lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 
 contract ParityWallet is Ownable {
     // Structure to store wallet details
@@ -37,7 +37,7 @@ contract ParityWallet is Ownable {
     );
     event TokenRecovered(address indexed tokenAddress, uint256 amount);
 
-    constructor(address _tokenAddress) Ownable() {
+    constructor(address _tokenAddress) Ownable(msg.sender) {
         require(_tokenAddress != address(0), "Invalid token address");
         token = IERC20(_tokenAddress);
     }
@@ -53,7 +53,7 @@ contract ParityWallet is Ownable {
         string memory _deviceId,
         address _walletAddress
     ) external {
-        require(_amount >= 0, "Amount cannot be negative");
+        require(_amount > 0, "Amount must be greater than 0");
         require(bytes(_deviceId).length > 0, "Device ID cannot be empty");
 
         // Always update wallet address when adding funds
