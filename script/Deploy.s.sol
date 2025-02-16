@@ -9,28 +9,19 @@ contract DeployScript is Script {
     function setUp() public {}
 
     function run() external {
-        // Local Anvil deployment
-        if (block.chainid == 31337) {
-            console.log("Deploying to local Anvil chain (chainId: 31337)");
-            vm.broadcast(0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80);
+        // Ensure we're only running on local network
+        require(block.chainid == 31337, "This script is intended to run only on local Anvil network");
 
-            // Deploy mock token first
-            MockParityToken mockToken = new MockParityToken();
-            console.log("Mock token deployed to:", address(mockToken));
+        console.log("Deploying to local Anvil chain (chainId: 31337)");
+        vm.broadcast(0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80);
 
-            // Deploy wallet using mock token
-            ParityWallet wallet = new ParityWallet(address(mockToken));
-            console.log("ParityWallet deployed to:", address(wallet));
-        } else {
-            // Network deployment
-            console.log("Deploying to network (chainId: %s)", block.chainid);
-            uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-            address tokenAddress = vm.envAddress("TOKEN_ADDRESS");
+        // Deploy mock token first
+        MockParityToken mockToken = new MockParityToken();
+        console.log("Mock token deployed to:", address(mockToken));
 
-            vm.broadcast(deployerPrivateKey);
-            ParityWallet wallet = new ParityWallet(tokenAddress);
-            console.log("ParityWallet deployed to:", address(wallet));
-        }
+        // Deploy wallet using mock token
+        ParityWallet wallet = new ParityWallet(address(mockToken));
+        console.log("ParityWallet deployed to:", address(wallet));
     }
 }
 
