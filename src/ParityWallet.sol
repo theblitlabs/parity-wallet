@@ -68,7 +68,7 @@ contract ParityWallet is Ownable {
 
         if (!wallets[_solverDeviceId].exists) {
             wallets[_solverDeviceId] =
-                WalletInfo({ balance: _amount, deviceId: _solverDeviceId, walletAddress: msg.sender, exists: true });
+                WalletInfo({balance: _amount, deviceId: _solverDeviceId, walletAddress: msg.sender, exists: true});
         } else {
             wallets[_solverDeviceId].balance += _amount;
         }
