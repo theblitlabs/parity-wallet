@@ -1,0 +1,3 @@
+[submodule "parity-wallet/lib/forge-std"]
+	path = parity-wallet/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
