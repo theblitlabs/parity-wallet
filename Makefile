@@ -36,11 +36,33 @@ anvil:
 anvil-fork:
 	anvil --fork-url ${RPC_URL}
 
+# Local deployment (no verification needed)
 deploy-local:
-	forge script script/Deploy.s.sol:DeployScript --rpc-url http://localhost:8545 --broadcast --ffi
+	forge script script/Deploy.s.sol:DeployScript \
+		--rpc-url http://localhost:8545 \
+		--private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+		--broadcast \
+		--ffi
 
-deploy-sepolia:
-	forge script script/Deploy.s.sol:DeployScript --rpc-url ${SEPOLIA_RPC_URL} --private-key ${PRIVATE_KEY} --broadcast --verify
+# Network deployments (with verification)
+deploy-sepolia: check-env
+	forge script script/Deploy.s.sol:DeployScript \
+		--rpc-url ${SEPOLIA_RPC_URL} \
+		--private-key ${PRIVATE_KEY} \
+		--broadcast \
+		--verify \
+		-vvvv
+
+# Environment checks
+check-env:
+	@if [ -z "${ETHERSCAN_API_KEY}" ]; then \
+		echo "Error: ETHERSCAN_API_KEY is required for network deployment"; \
+		exit 1; \
+	fi
+	@if [ -z "${PRIVATE_KEY}" ]; then \
+		echo "Error: PRIVATE_KEY is required for network deployment"; \
+		exit 1; \
+	fi
 
 # Development tools
 format:

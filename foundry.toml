@@ -2,19 +2,3 @@
 src = "src"
 out = "out"
 libs = ["lib"]
-solc = "0.8.28"  # Match Hardhat version
-remappings = [
-    "@openzeppelin/=lib/openzeppelin-contracts/",
-    "forge-std/=lib/forge-std/src/"
-]
-
-[rpc_endpoints]
-sepolia = "${SEPOLIA_RPC_URL}"
-
-[etherscan]
-sepolia = { key = "${ETHERSCAN_API_KEY}" }
-
-[fmt]
-line_length = 120
-tab_width = 4
-bracket_spacing = true
