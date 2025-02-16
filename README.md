@@ -1,124 +1,218 @@
 # Parity Wallet
 
-This project demonstrates a Hardhat use case for a wallet system contract named **ParityWallet**.  
-The contract allows participants (runners, solvers, creators, etc.) to:
+This repository contains a smart contract wallet implementation for managing token deposits, transfers, and withdrawals. The project is built with [Foundry](https://book.getfoundry.sh/) and leverages secure development practices for robust wallet management.
 
-- **Add Funds:** Deposit tokens into a wallet identified by a device ID along with a designated withdrawal address.
-- **Transfer Payment:** Distribute funds from a creator's wallet (by device ID) to a solver's wallet.
-- **Withdraw Funds:** Withdraw tokens from a wallet to an external address (e.g., a MetaMask wallet).
-- **Update Wallet Address:** Change the withdrawal address for a wallet.
-- **Recover Tokens:** Allow the contract owner to recover tokens accidentally sent to the contract.
+## Features
 
-## Getting Started
+- **Wallet Management**: Secure implementation for managing token deposits and withdrawals
+- **Device-based Identification**: Unique device IDs for wallet identification
+- **Transfer System**: Secure transfer mechanism between wallets
+- **Address Management**: Update withdrawal addresses for enhanced security
+- **Token Recovery**: Emergency token recovery functionality for contract owner
+- **Deployment Scripts**: Ready-to-use scripts for both local development and testnet deployments
+- **Etherscan Verification**: Automatic integration for contract source verification
+- **Environment Management**: Uses environment variables for secure handling of sensitive configurations
 
-### 1. Clone the Repository
+## Prerequisites
 
-```bash
-git clone https://github.com/theblitlabs/parity-wallet.git
-cd parity-wallet
+- [Foundry](https://book.getfoundry.sh/getting-started/installation.html) installed
+- An Ethereum wallet with testnet ETH (for deploying to networks like Sepolia)
+
+## Setup & Installation
+
+1. **Clone the repository with submodules:**
+
+   ```bash
+   git clone --recursive https://github.com/parity-wallet/parity-wallet.git
+   cd parity-wallet
+   ```
+
+   If you've already cloned the repository without `--recursive`, run:
+
+   ```bash
+   make install
+   ```
+
+   This will initialize and update all required submodules.
+
+2. **Dependencies:**
+   The project uses git submodules for dependency management:
+
+   - `forge-std`: Foundry's standard library for testing and scripting
+     Dependencies are pinned to specific commits for reproducible builds.
+
+3. **Updating Dependencies:**
+   To update all dependencies to their latest versions:
+
+   ```bash
+   make update
+   ```
+
+4. **Configure Environment Variables:**
+   - Copy the environment template:
+     ```bash
+     cp .env.example .env
+     ```
+   - Update `.env` with your credentials:
+     ```
+     PRIVATE_KEY="your wallet private key"
+     SEPOLIA_RPC_URL="your RPC URL"
+     TOKEN_ADDRESS="your token contract address"
+     ```
+
+## Documentation
+
+For detailed Foundry usage, visit: https://book.getfoundry.sh/
+
+## Usage
+
+The project includes a Makefile for common operations. Here are the main commands:
+
+### Development
+
+```shell
+# Build the project
+$ make build
+
+# Run tests
+$ make test
+
+# Run tests with gas reporting
+$ make test-gas
+
+# Format code
+$ make format
+
+# Clean build artifacts
+$ make clean
 ```
 
-### 2. Install Dependencies
+### Deployment
 
-```bash
-npm install
+```shell
+# Start local node
+$ make anvil
+
+# Deploy to local network
+$ make deploy-local
+
+# Deploy to Sepolia testnet
+$ make deploy-sepolia
 ```
 
-### 3. Configure Environment Variables
+Note: For testnet deployments, ensure your `.env` file is properly configured with `SEPOLIA_RPC_URL` and `PRIVATE_KEY`.
 
-Create a `.env` file in the project root with the following variables. **Remember to add `.env` to your `.gitignore` to keep your sensitive information private.**
+## Contract Functionality
 
-```bash
-SEPOLIA_RPC=https://ethereum-sepolia-rpc.publicnode.com
-PRIVATE_KEY=your_private_key_here
-TOKEN_ADDRESS=0xYourTokenAddressHere
-```
+The ParityWallet contract provides the following key functions:
 
-### 4. Compile the Contracts
+### Core Functions
 
-```bash
-npx hardhat compile
-```
+- **Add Funds:**
 
-### 5. Deploy the Contract
-
-Deploy the **StakeWallet** contract using the deploy script:
-
-```bash
-npx hardhat run scripts/deploy.ts --network sepolia
-```
-
-### 6. Verify Contracts on Etherscan
-
-If you have set up your Etherscan API key in Hardhat, you can verify the deployed contract:
-
-```bash
-npx hardhat verify --network sepolia <contract-address>
-```
-
-### 7. Interacting with the Contract
-
-Here's a summary of the main functions and how to use them via scripts or the Hardhat console:
-
-- **Add Funds:**  
-  Deposit tokens into your wallet by specifying the amount, your device ID, and the withdrawal address.  
-  Example:
-
-  ```javascript
-  // Using ethers.js in a script
-  await stakeWallet.addFunds(amount, "device123", "0xYourWithdrawalAddress");
+  ```solidity
+  function addFunds(uint256 amount, string deviceId, address withdrawalAddress)
   ```
 
-- **Transfer Payment:**  
-  Transfer funds from a creator's wallet to a solver's wallet by providing their respective device IDs and the payment amount.  
-  Example:
+  Deposit tokens into a wallet identified by a device ID.
 
-  ```javascript
-  await stakeWallet.transferPayment(
-    "creatorDevice",
-    "solverDevice",
-    paymentAmount
-  );
+- **Transfer Payment:**
+
+  ```solidity
+  function transferPayment(string creatorDeviceId, string solverDeviceId, uint256 amount)
   ```
 
-- **Withdraw Funds:**  
-  Withdraw funds from your wallet to your designated withdrawal address:
+  Transfer funds between wallets using device IDs.
 
-  ```javascript
-  await stakeWallet.withdrawFunds("device123", withdrawAmount);
+- **Withdraw Funds:**
+
+  ```solidity
+  function withdrawFunds(string deviceId, uint256 amount)
   ```
 
-- **Update Wallet Address:**  
-  Update the withdrawal address for an existing wallet:
+  Withdraw tokens to the designated withdrawal address.
 
-  ```javascript
-  await stakeWallet.updateWalletAddress("device123", "0xNewWalletAddress");
+- **Update Wallet Address:**
+  ```solidity
+  function updateWalletAddress(string deviceId, address newAddress)
   ```
+  Update the withdrawal address for a wallet.
 
-- **Get Wallet Info & Balance:**  
-  Retrieve wallet details or check the balance using:
+### Administrative Functions
 
-  ```javascript
-  const info = await stakeWallet.getWalletInfo("device123");
-  const balance = await stakeWallet.getBalance("device123");
+- **Recover Tokens:**
+  ```solidity
+  function recoverTokens(address tokenAddress, uint256 amount)
   ```
+  Allow contract owner to recover tokens accidentally sent to the contract.
 
-- **Recover Tokens:**  
-  The contract owner can recover tokens accidentally sent to the contract:
-  ```javascript
-  await stakeWallet.recoverTokens(tokenAddress, amount);
-  ```
+## Development
 
-## Running Hardhat Tasks
+This project uses [Git Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) for dependency management, ensuring reproducible builds and consistent development environments.
 
-- **Start Hardhat Node:**
+### Development Workflow
 
-```bash
-npx hardhat node
-```
+1. **Local Development:**
 
-- **Run Tests** (if tests are available):
+   ```bash
+   # Start local node
+   make anvil
 
-```bash
-npx hardhat test
-```
+   # Deploy locally
+   make deploy-local
+   ```
+
+2. **Testing:**
+
+   ```bash
+   # Run all tests
+   make test
+
+   # Run with gas reporting
+   make test-gas
+
+   # Run with traces
+   make trace
+   ```
+
+3. **Code Quality:**
+
+   ```bash
+   # Format code
+   make format
+
+   # Build and check sizes
+   make sizes
+   ```
+
+## Best Practices & Security
+
+### Security Considerations
+
+- **Secure Credentials:** Never commit your `.env` file or expose private keys
+- **Device ID Management:** Ensure unique device IDs for wallet identification
+- **Withdrawal Controls:** Strict validation of withdrawal addresses and amounts
+- **Emergency Recovery:** Token recovery system for contract owner
+- **Automated Verification:** Etherscan verification in deployment process
+
+### Development Guidelines
+
+- **Testing:** Write comprehensive tests for all wallet functions
+- **Gas Optimization:** Monitor gas usage with `make test-gas`
+- **Code Style:** Use `make format` before committing
+- **Dependencies:** Document any new dependencies added
+
+### CI/CD Pipeline
+
+- Automated testing on pull requests
+- Security analysis
+- Gas usage monitoring
+- Testnet deployment verification
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request if you have any enhancements or bug fixes.
+
+## License
+
+This project is licensed under the MIT License.
