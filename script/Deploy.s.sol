@@ -7,29 +7,32 @@ import "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 
 contract DeployScript is Script {
     function run() external {
-        uint256 deployerPrivateKey;
-        address tokenAddress;
+        // Check chain ID first
+        uint256 chainId;
+        assembly {
+            chainId := chainid()
+        }
 
-        // For local deployment, use default key
-        if (block.chainid == 31337) {
-            // Anvil chain ID
-            deployerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
+        if (chainId == 31337) {
+            // Local Anvil chain
+            // Use default Anvil private key
+            vm.startBroadcast(
+                0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+            );
 
-            // Deploy a mock token
-            vm.startBroadcast(deployerPrivateKey);
+            // Deploy mock token first
             MockParityToken mockToken = new MockParityToken();
-            tokenAddress = address(mockToken);
-            console.log("Mock token deployed to:", tokenAddress);
+            console.log("Mock token deployed to:", address(mockToken));
 
-            // Deploy the wallet
-            ParityWallet wallet = new ParityWallet(tokenAddress);
+            // Deploy wallet using mock token
+            ParityWallet wallet = new ParityWallet(address(mockToken));
             console.log("ParityWallet deployed to:", address(wallet));
         } else {
-            deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-            tokenAddress = vm.envAddress("TOKEN_ADDRESS");
+            // Network deployment - require environment variables
+            uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+            address tokenAddress = vm.envAddress("TOKEN_ADDRESS");
 
             vm.startBroadcast(deployerPrivateKey);
-            // Deploy the wallet
             ParityWallet wallet = new ParityWallet(tokenAddress);
             console.log("ParityWallet deployed to:", address(wallet));
         }
