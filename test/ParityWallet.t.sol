@@ -38,19 +38,9 @@ contract ParityWalletTest is Test {
         wallet.addFunds(depositAmount, TEST_DEVICE_ID, user);
         vm.stopPrank();
 
-        (uint256 balance, , , bool exists) = wallet.getWalletInfo(
-            TEST_DEVICE_ID
-        );
-        assertEq(
-            balance,
-            depositAmount,
-            "Incorrect wallet balance after deposit"
-        );
-        assertEq(
-            token.balanceOf(user),
-            INITIAL_BALANCE - depositAmount,
-            "Incorrect user balance after deposit"
-        );
+        (uint256 balance,,, bool exists) = wallet.getWalletInfo(TEST_DEVICE_ID);
+        assertEq(balance, depositAmount, "Incorrect wallet balance after deposit");
+        assertEq(token.balanceOf(user), INITIAL_BALANCE - depositAmount, "Incorrect user balance after deposit");
         assertTrue(exists, "Wallet should exist");
     }
 
@@ -67,14 +57,8 @@ contract ParityWalletTest is Test {
         wallet.withdrawFunds(TEST_DEVICE_ID, withdrawAmount);
         vm.stopPrank();
 
-        (uint256 balance, , , bool exists) = wallet.getWalletInfo(
-            TEST_DEVICE_ID
-        );
-        assertEq(
-            balance,
-            depositAmount - withdrawAmount,
-            "Incorrect wallet balance after withdrawal"
-        );
+        (uint256 balance,,, bool exists) = wallet.getWalletInfo(TEST_DEVICE_ID);
+        assertEq(balance, depositAmount - withdrawAmount, "Incorrect wallet balance after withdrawal");
         assertEq(
             token.balanceOf(user),
             INITIAL_BALANCE - depositAmount + withdrawAmount,
