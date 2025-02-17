@@ -14,21 +14,12 @@ contract DeployScript is Script {
         console.log("Starting deployment...");
         vm.startBroadcast(deployerPrivateKey);
 
-        // Deploy mock token first
-        MockParityToken mockToken = new MockParityToken();
-        console.log("Mock token deployed to:", address(mockToken));
-
         // Deploy wallet using mock token
-        ParityWallet wallet = new ParityWallet(address(mockToken));
+        ParityWallet wallet = new ParityWallet(
+            0x5FbDB2315678afecb367f032d93F642f64180aa3
+        );
         console.log("ParityWallet deployed to:", address(wallet));
 
         vm.stopBroadcast();
-    }
-}
-
-// Mock token for local testing
-contract MockParityToken is ERC20 {
-    constructor() ERC20("Mock Parity Token", "MPT") {
-        _mint(msg.sender, 1000000 * 10 ** 18);
     }
 }
