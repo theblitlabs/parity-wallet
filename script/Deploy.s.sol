@@ -9,21 +9,27 @@ contract DeployScript is Script {
     function setUp() public {}
 
     function run() external {
-        // Get private key from command line args
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        uint256 deployerPrivateKey;
         address tokenAddress;
 
-        console.log("Starting deployment...");
-        vm.startBroadcast(deployerPrivateKey);
-
-        // For local deployment, deploy a mock token
+        // For local deployment, use default Anvil private key
         if (block.chainid == 31337) {
+            deployerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
+
+            console.log("Starting local deployment...");
+            vm.startBroadcast(deployerPrivateKey);
+
+            // Deploy mock token
             MockParityToken mockToken = new MockParityToken();
             tokenAddress = address(mockToken);
             console.log("Mock token deployed to:", tokenAddress);
         } else {
-            // For network deployment, use token address from env
+            // Network deployment - require environment variables
+            deployerPrivateKey = vm.envUint("PRIVATE_KEY");
             tokenAddress = vm.envAddress("TOKEN_ADDRESS");
+
+            console.log("Starting network deployment...");
+            vm.startBroadcast(deployerPrivateKey);
         }
 
         // Deploy wallet using the appropriate token address
