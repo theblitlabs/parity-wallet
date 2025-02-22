@@ -9,17 +9,34 @@ contract DeployScript is Script {
     function setUp() public {}
 
     function run() external {
-        uint256 deployerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
+        // Get private key from command line args
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        address tokenAddress;
 
         console.log("Starting deployment...");
         vm.startBroadcast(deployerPrivateKey);
 
-        // Deploy wallet using mock token
-        ParityWallet wallet = new ParityWallet(
-            0x5FbDB2315678afecb367f032d93F642f64180aa3
-        );
+        // For local deployment, deploy a mock token
+        if (block.chainid == 31337) {
+            MockParityToken mockToken = new MockParityToken();
+            tokenAddress = address(mockToken);
+            console.log("Mock token deployed to:", tokenAddress);
+        } else {
+            // For network deployment, use token address from env
+            tokenAddress = vm.envAddress("TOKEN_ADDRESS");
+        }
+
+        // Deploy wallet using the appropriate token address
+        ParityWallet wallet = new ParityWallet(tokenAddress);
         console.log("ParityWallet deployed to:", address(wallet));
 
         vm.stopBroadcast();
+    }
+}
+
+// Mock token for local testing
+contract MockParityToken is ERC20 {
+    constructor() ERC20("Mock Parity Token", "MPT") {
+        _mint(msg.sender, 1000000 * 10 ** 18);
     }
 }
