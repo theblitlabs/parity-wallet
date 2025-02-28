@@ -21,10 +21,7 @@ contract DeployScript is Script {
             tokenAddress = addr;
             console.log("Using existing token at:", tokenAddress);
         } catch {
-            uint256 initialSupply = vm.envOr(
-                "INITIAL_SUPPLY",
-                uint256(100_000_000 * 10 ** 18)
-            );
+            uint256 initialSupply = vm.envOr("INITIAL_SUPPLY", uint256(100_000_000 * 10 ** 18));
             ParityToken token = new ParityToken(initialSupply);
             tokenAddress = address(token);
             console.log("New ParityToken deployed to:", tokenAddress);
