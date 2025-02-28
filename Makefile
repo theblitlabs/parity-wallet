@@ -54,10 +54,6 @@ deploy-sepolia: check-env
 
 # Environment checks
 check-env:
-	@if [ -z "${ETHERSCAN_API_KEY}" ]; then \
-		echo "Error: ETHERSCAN_API_KEY is required for network deployment"; \
-		exit 1; \
-	fi
 	@if [ -z "${PRIVATE_KEY}" ]; then \
 		echo "Error: PRIVATE_KEY is required for network deployment"; \
 		exit 1; \
