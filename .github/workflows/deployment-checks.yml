@@ -13,10 +13,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Checkout Repository with Submodules
+        uses: actions/checkout@v4
         with:
-          submodules: recursive
-          token: ${{ secrets.GITHUB_TOKEN }}
+          submodules: true
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
@@ -40,9 +48,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Checkout Repository with Submodules
+        uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: true
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
@@ -55,9 +72,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Checkout Repository with Submodules
+        uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: true
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
