@@ -1,9 +1,10 @@
 # Parity Wallet
 
-This repository contains a smart contract wallet implementation for managing token deposits, transfers, and withdrawals. The project is built with [Foundry](https://book.getfoundry.sh/) and leverages secure development practices for robust wallet management.
+This repository contains an upgradeable smart contract wallet implementation for managing token deposits, transfers, and withdrawals. The project is built with [Foundry](https://book.getfoundry.sh/) and leverages secure development practices for robust wallet management.
 
 ## Features
 
+- **Upgradeable Contract**: Uses UUPS proxy pattern for future upgrades
 - **Wallet Management**: Secure implementation for managing token deposits and withdrawals
 - **Device-based Identification**: Unique device IDs for wallet identification
 - **Transfer System**: Secure transfer mechanism between wallets
@@ -58,6 +59,7 @@ This repository contains a smart contract wallet implementation for managing tok
      PRIVATE_KEY="your wallet private key"
      SEPOLIA_RPC_URL="your RPC URL"
      TOKEN_ADDRESS="your token contract address"
+     PROXY_ADDRESS="your proxy address (needed for upgrades)"
      ```
 
 ## Documentation
@@ -93,20 +95,48 @@ $ make clean
 # Start local node
 $ make anvil
 
-# Deploy to local network
-$ make deploy-local
+# Deploy to local network with proxy
+$ make deploy-proxy-local
 
-# Deploy to Sepolia testnet
-$ make deploy-sepolia
+# Deploy to Sepolia testnet with proxy
+$ make deploy-proxy-sepolia
+
+# Upgrade implementation on local network
+$ make upgrade-proxy-local
+
+# Upgrade implementation on Sepolia testnet
+$ make upgrade-proxy-sepolia
 ```
 
-Note: For testnet deployments, ensure your `.env` file is properly configured with `SEPOLIA_RPC_URL` and `PRIVATE_KEY`.
+Note: For testnet deployments, ensure your `.env` file is properly configured with:
 
-## Contract Functionality
+```env
+SEPOLIA_RPC_URL="your RPC URL"
+PRIVATE_KEY="your wallet private key"
+TOKEN_ADDRESS="your token contract address"
+PROXY_ADDRESS="your proxy address (needed for upgrades)"
+```
 
-The ParityWallet contract provides the following key functions:
+## Contract Architecture
+
+The ParityWallet system uses the UUPS (Universal Upgradeable Proxy Standard) pattern with two main contracts:
+
+### ParityWalletProxy
+
+- Handles all user interactions
+- Delegates calls to the implementation
+- Maintains contract state
+- Remains at a fixed address
+
+### ParityWallet (Implementation)
+
+- Contains the actual logic
+- Can be upgraded while maintaining state
+- Users never interact with this directly
 
 ### Core Functions
+
+All functions should be called through the proxy address:
 
 - **Add Funds:**
 
@@ -158,8 +188,8 @@ This project uses [Git Submodules](https://git-scm.com/book/en/v2/Git-Tools-Subm
    # Start local node
    make anvil
 
-   # Deploy locally
-   make deploy-local
+   # Deploy with proxy locally
+   make deploy-proxy-local
    ```
 
 2. **Testing:**
@@ -172,24 +202,30 @@ This project uses [Git Submodules](https://git-scm.com/book/en/v2/Git-Tools-Subm
    make test-gas
 
    # Run with traces
-   make trace
+   make test-trace
    ```
 
-3. **Code Quality:**
-
+3. **Upgrading Contract:**
    ```bash
-   # Format code
-   make format
-
-   # Build and check sizes
-   make sizes
+   # After making changes to the implementation
+   make upgrade-proxy-local    # For local testing
+   make upgrade-proxy-sepolia  # For testnet
    ```
 
-## Best Practices & Security
+### Best Practices & Security
 
-### Security Considerations
+#### Proxy Pattern Best Practices
+
+- Always interact with the proxy address, not the implementation
+- Keep track of both proxy and implementation addresses
+- Test upgrades thoroughly before deploying to mainnet
+- Use proper initialization through the proxy
+- Never initialize the implementation contract directly
+
+#### Security Considerations
 
 - **Secure Credentials:** Never commit your `.env` file or expose private keys
+- **Proxy Safety:** Ensure proper access controls for upgrades
 - **Device ID Management:** Ensure unique device IDs for wallet identification
 - **Withdrawal Controls:** Strict validation of withdrawal addresses and amounts
 - **Emergency Recovery:** Token recovery system for contract owner
