@@ -1,14 +1,14 @@
 # Load environment variables
 -include .env
 
-.PHONY: all install build test clean deploy anvil format
+.PHONY: all install build test clean deploy anvil format deploy-proxy upgrade-proxy
 
 # Main targets
 all: install build test
 
 # Setup and dependencies
 install:
-	git submodule update --init --recursive
+	forge install
 
 # Build and test
 build:
@@ -46,6 +46,35 @@ deploy-local:
 # Network deployments (with verification)
 deploy-sepolia: check-env
 	forge script script/Deploy.s.sol:DeployScript \
+		--rpc-url ${SEPOLIA_RPC_URL} \
+		--private-key ${PRIVATE_KEY} \
+		--broadcast \
+		--verify \
+		-vvvv
+
+# Proxy deployment and upgrade commands
+deploy-proxy-local:
+	forge script script/DeployProxy.s.sol:DeployProxyScript \
+		--rpc-url http://localhost:8545 \
+		--broadcast \
+		--ffi
+
+deploy-proxy-sepolia: check-env
+	forge script script/DeployProxy.s.sol:DeployProxyScript \
+		--rpc-url ${SEPOLIA_RPC_URL} \
+		--private-key ${PRIVATE_KEY} \
+		--broadcast \
+		--verify \
+		-vvvv
+
+upgrade-proxy-local:
+	forge script script/UpgradeWallet.s.sol:UpgradeScript \
+		--rpc-url http://localhost:8545 \
+		--broadcast \
+		--ffi
+
+upgrade-proxy-sepolia: check-env
+	forge script script/UpgradeWallet.s.sol:UpgradeScript \
 		--rpc-url ${SEPOLIA_RPC_URL} \
 		--private-key ${PRIVATE_KEY} \
 		--broadcast \

@@ -1,33 +1,33 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.28;
 
 import "forge-std/Test.sol";
 import "../src/ParityWallet.sol";
-import "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
-
-contract MockParityToken is ERC20 {
-    constructor() ERC20("Mock Parity Token", "MPT") {
-        _mint(msg.sender, 1000000 * 10 ** 18);
-    }
-}
+import "./mocks/MockToken.sol";
 
 contract ParityWalletTest is Test {
     ParityWallet public wallet;
-    MockParityToken public token;
+    MockToken public token;
+    address public owner;
     address public user;
-    uint256 public constant INITIAL_BALANCE = 1000 * 10 ** 18;
-    string constant TEST_DEVICE_ID = "test_device_1";
 
     function setUp() public {
-        token = new MockParityToken();
-        wallet = new ParityWallet(address(token));
-        user = makeAddr("user");
+        owner = address(this);
+        user = address(0x1);
+        vm.label(owner, "Owner");
+        vm.label(user, "User");
 
-        // Transfer some tokens to test user
-        token.transfer(user, INITIAL_BALANCE);
-        vm.label(address(token), "Parity Token");
-        vm.label(address(wallet), "Parity Wallet");
-        vm.label(user, "Test User");
+        // Deploy mock token
+        token = new MockToken();
+
+        // Deploy and initialize wallet
+        wallet = new ParityWallet();
+        wallet.initialize(address(token));
+
+        // Give user some tokens
+        token.mint(user, 1000 ether);
+        vm.prank(user);
+        token.approve(address(wallet), type(uint256).max);
     }
 
     function testAddFunds() public {
@@ -35,12 +35,22 @@ contract ParityWalletTest is Test {
 
         vm.startPrank(user);
         token.approve(address(wallet), depositAmount);
-        wallet.addFunds(depositAmount, TEST_DEVICE_ID, user);
+        wallet.addFunds(depositAmount, "test_device_1", user);
         vm.stopPrank();
 
-        (uint256 balance,,, bool exists) = wallet.getWalletInfo(TEST_DEVICE_ID);
-        assertEq(balance, depositAmount, "Incorrect wallet balance after deposit");
-        assertEq(token.balanceOf(user), INITIAL_BALANCE - depositAmount, "Incorrect user balance after deposit");
+        (uint256 balance, , , bool exists) = wallet.getWalletInfo(
+            "test_device_1"
+        );
+        assertEq(
+            balance,
+            depositAmount,
+            "Incorrect wallet balance after deposit"
+        );
+        assertEq(
+            token.balanceOf(user),
+            1000 ether - depositAmount,
+            "Incorrect user balance after deposit"
+        );
         assertTrue(exists, "Wallet should exist");
     }
 
@@ -51,17 +61,23 @@ contract ParityWalletTest is Test {
         // First deposit
         vm.startPrank(user);
         token.approve(address(wallet), depositAmount);
-        wallet.addFunds(depositAmount, TEST_DEVICE_ID, user);
+        wallet.addFunds(depositAmount, "test_device_1", user);
 
         // Then withdraw
-        wallet.withdrawFunds(TEST_DEVICE_ID, withdrawAmount);
+        wallet.withdrawFunds("test_device_1", withdrawAmount);
         vm.stopPrank();
 
-        (uint256 balance,,, bool exists) = wallet.getWalletInfo(TEST_DEVICE_ID);
-        assertEq(balance, depositAmount - withdrawAmount, "Incorrect wallet balance after withdrawal");
+        (uint256 balance, , , bool exists) = wallet.getWalletInfo(
+            "test_device_1"
+        );
+        assertEq(
+            balance,
+            depositAmount - withdrawAmount,
+            "Incorrect wallet balance after withdrawal"
+        );
         assertEq(
             token.balanceOf(user),
-            INITIAL_BALANCE - depositAmount + withdrawAmount,
+            1000 ether - depositAmount + withdrawAmount,
             "Incorrect user balance after withdrawal"
         );
         assertTrue(exists, "Wallet should exist");
@@ -73,17 +89,17 @@ contract ParityWalletTest is Test {
 
         vm.startPrank(user);
         token.approve(address(wallet), depositAmount);
-        wallet.addFunds(depositAmount, TEST_DEVICE_ID, user);
+        wallet.addFunds(depositAmount, "test_device_1", user);
 
         vm.expectRevert("Insufficient balance");
-        wallet.withdrawFunds(TEST_DEVICE_ID, withdrawAmount);
+        wallet.withdrawFunds("test_device_1", withdrawAmount);
         vm.stopPrank();
     }
 
     function test_RevertWhen_ZeroDeposit() public {
         vm.prank(user);
         vm.expectRevert("Amount must be greater than 0");
-        wallet.addFunds(0, TEST_DEVICE_ID, user);
+        wallet.addFunds(0, "test_device_1", user);
     }
 
     function test_RevertWhen_ZeroWithdraw() public {
@@ -91,10 +107,10 @@ contract ParityWalletTest is Test {
         uint256 depositAmount = 100 * 10 ** 18;
         vm.startPrank(user);
         token.approve(address(wallet), depositAmount);
-        wallet.addFunds(depositAmount, TEST_DEVICE_ID, user);
+        wallet.addFunds(depositAmount, "test_device_1", user);
 
         vm.expectRevert("Amount must be greater than 0");
-        wallet.withdrawFunds(TEST_DEVICE_ID, 0);
+        wallet.withdrawFunds("test_device_1", 0);
         vm.stopPrank();
     }
 }
