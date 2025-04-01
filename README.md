@@ -24,7 +24,7 @@ This repository contains an upgradeable smart contract wallet implementation for
 1. **Clone the repository with submodules:**
 
    ```bash
-   git clone --recursive https://github.com/parity-wallet/parity-wallet.git
+   git clone --recursive https://github.com/theblitlabs/parity-wallet.git
    cd parity-wallet
    ```
 
