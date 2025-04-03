@@ -13,6 +13,7 @@ This repository contains an upgradeable smart contract wallet implementation for
 - **Deployment Scripts**: Ready-to-use scripts for both local development and testnet deployments
 - **Etherscan Verification**: Automatic integration for contract source verification
 - **Environment Management**: Uses environment variables for secure handling of sensitive configurations
+- **Auto-updating Addresses**: Automatically tracks deployed contract addresses in .env
 
 ## Prerequisites
 
@@ -40,6 +41,8 @@ This repository contains an upgradeable smart contract wallet implementation for
    The project uses git submodules for dependency management:
 
    - `forge-std`: Foundry's standard library for testing and scripting
+   - `openzeppelin-contracts`: For secure contract implementations
+   - `openzeppelin-contracts-upgradeable`: For upgradeable contract patterns
      Dependencies are pinned to specific commits for reproducible builds.
 
 3. **Updating Dependencies:**
@@ -50,16 +53,27 @@ This repository contains an upgradeable smart contract wallet implementation for
    ```
 
 4. **Configure Environment Variables:**
+
    - Copy the environment template:
      ```bash
      cp .env.example .env
      ```
-   - Update `.env` with your credentials:
-     ```
-     PRIVATE_KEY="your wallet private key"
-     SEPOLIA_RPC_URL="your RPC URL"
-     TOKEN_ADDRESS="your token contract address"
-     PROXY_ADDRESS="your proxy address (needed for upgrades)"
+   - Required variables in `.env`:
+
+     ```bash
+     # RPC Endpoints (required)
+     SEPOLIA_RPC_URL=                       # Example: https://1rpc.io/sepolia
+
+     # Deployment Account (required)
+     PRIVATE_KEY=                           # Your private key (with 0x prefix)
+
+     # Contract Addresses (required)
+     TOKEN_ADDRESS=                         # The ERC20 token contract address
+     PROXY_ADDRESS=                         # The proxy contract address (required for upgrades)
+     IMPLEMENTATION_ADDRESS=                # The current implementation contract address (auto-updated)
+
+     # Verification (optional)
+     ETHERSCAN_API_KEY=                    # For contract verification on Etherscan
      ```
 
 ## Documentation
@@ -108,14 +122,10 @@ $ make upgrade-proxy-local
 $ make upgrade-proxy-sepolia
 ```
 
-Note: For testnet deployments, ensure your `.env` file is properly configured with:
+Note: The deployment scripts will automatically update your `.env` file with the newly deployed contract addresses:
 
-```env
-SEPOLIA_RPC_URL="your RPC URL"
-PRIVATE_KEY="your wallet private key"
-TOKEN_ADDRESS="your token contract address"
-PROXY_ADDRESS="your proxy address (needed for upgrades)"
-```
+- `PROXY_ADDRESS`: Updated when deploying a new proxy
+- `IMPLEMENTATION_ADDRESS`: Updated when deploying or upgrading the implementation
 
 ## Contract Architecture
 
@@ -187,63 +197,104 @@ This project uses [Git Submodules](https://git-scm.com/book/en/v2/Git-Tools-Subm
    ```bash
    # Start local node
    make anvil
+   ```
 
-   # Deploy with proxy locally
+## Deployment Steps
+
+### Initial Deployment
+
+1. **Deploy the Implementation and Proxy:**
+
+   ```bash
+   # For local development
    make deploy-proxy-local
+
+   # For Sepolia testnet
+   make deploy-proxy-sepolia
    ```
 
-2. **Testing:**
+   This will:
+
+   - Deploy the ParityWallet implementation contract
+   - Deploy the UUPS proxy
+   - Initialize the proxy with your token address
+   - Update your .env with the new addresses
+
+2. **Verify Deployment:**
+   - The proxy address will be saved as `PROXY_ADDRESS` in your .env
+   - The implementation address will be saved as `IMPLEMENTATION_ADDRESS`
+   - All user interactions should be done through the `PROXY_ADDRESS`
+
+### Upgrading the Contract
+
+When you need to upgrade the wallet implementation:
+
+1. **Deploy New Implementation:**
 
    ```bash
-   # Run all tests
-   make test
+   # For local development
+   make upgrade-proxy-local
 
-   # Run with gas reporting
-   make test-gas
-
-   # Run with traces
-   make test-trace
+   # For Sepolia testnet
+   make upgrade-proxy-sepolia
    ```
 
-3. **Upgrading Contract:**
+   This will:
+
+   - Deploy the new implementation contract
+   - Call `upgradeTo()` on the proxy to point to the new implementation
+   - Update `IMPLEMENTATION_ADDRESS` in your .env
+
+2. **Verify Upgrade:**
+   - Check that the proxy is pointing to the new implementation
+   - Verify that existing state is preserved
+   - Test new functionality through the proxy address
+
+### Important Notes
+
+- Always test upgrades on a local network first
+- Keep track of all implementation addresses for future reference
+- The proxy address remains constant across upgrades
+- All user interactions should always use the proxy address
+- State is preserved in the proxy during upgrades
+
+### Deployment Configuration
+
+Make sure your `.env` file is properly configured before deployment:
+
+```bash
+# Required for deployment
+PRIVATE_KEY=your_private_key
+SEPOLIA_RPC_URL=your_rpc_url
+TOKEN_ADDRESS=your_token_address
+
+# Optional for verification
+ETHERSCAN_API_KEY=your_api_key
+```
+
+### Post-Deployment Verification
+
+After deployment or upgrade:
+
+1. **Verify Implementation:**
+
    ```bash
-   # After making changes to the implementation
-   make upgrade-proxy-local    # For local testing
-   make upgrade-proxy-sepolia  # For testnet
+   # Get the implementation address from the proxy
+   cast implementation <PROXY_ADDRESS>
    ```
 
-### Best Practices & Security
+2. **Verify Initialization:**
 
-#### Proxy Pattern Best Practices
+   ```bash
+   # Check if the token address is set correctly
+   cast call <PROXY_ADDRESS> "token()" --rpc-url <RPC_URL>
+   ```
 
-- Always interact with the proxy address, not the implementation
-- Keep track of both proxy and implementation addresses
-- Test upgrades thoroughly before deploying to mainnet
-- Use proper initialization through the proxy
-- Never initialize the implementation contract directly
-
-#### Security Considerations
-
-- **Secure Credentials:** Never commit your `.env` file or expose private keys
-- **Proxy Safety:** Ensure proper access controls for upgrades
-- **Device ID Management:** Ensure unique device IDs for wallet identification
-- **Withdrawal Controls:** Strict validation of withdrawal addresses and amounts
-- **Emergency Recovery:** Token recovery system for contract owner
-- **Automated Verification:** Etherscan verification in deployment process
-
-### Development Guidelines
-
-- **Testing:** Write comprehensive tests for all wallet functions
-- **Gas Optimization:** Monitor gas usage with `make test-gas`
-- **Code Style:** Use `make format` before committing
-- **Dependencies:** Document any new dependencies added
-
-### CI/CD Pipeline
-
-- Automated testing on pull requests
-- Security analysis
-- Gas usage monitoring
-- Testnet deployment verification
+3. **Verify Ownership:**
+   ```bash
+   # Check if ownership is set correctly
+   cast call <PROXY_ADDRESS> "owner()" --rpc-url <RPC_URL>
+   ```
 
 ## Contributing
 
