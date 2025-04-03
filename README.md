@@ -197,71 +197,104 @@ This project uses [Git Submodules](https://git-scm.com/book/en/v2/Git-Tools-Subm
    ```bash
    # Start local node
    make anvil
+   ```
 
-   # Deploy with proxy locally (uses --ffi to update .env)
+## Deployment Steps
+
+### Initial Deployment
+
+1. **Deploy the Implementation and Proxy:**
+
+   ```bash
+   # For local development
    make deploy-proxy-local
+
+   # For Sepolia testnet
+   make deploy-proxy-sepolia
    ```
 
-2. **Testing:**
+   This will:
+
+   - Deploy the ParityWallet implementation contract
+   - Deploy the UUPS proxy
+   - Initialize the proxy with your token address
+   - Update your .env with the new addresses
+
+2. **Verify Deployment:**
+   - The proxy address will be saved as `PROXY_ADDRESS` in your .env
+   - The implementation address will be saved as `IMPLEMENTATION_ADDRESS`
+   - All user interactions should be done through the `PROXY_ADDRESS`
+
+### Upgrading the Contract
+
+When you need to upgrade the wallet implementation:
+
+1. **Deploy New Implementation:**
 
    ```bash
-   # Run all tests
-   make test
+   # For local development
+   make upgrade-proxy-local
 
-   # Run with gas reporting
-   make test-gas
-
-   # Run with traces
-   make test-trace
+   # For Sepolia testnet
+   make upgrade-proxy-sepolia
    ```
 
-3. **Upgrading Contract:**
+   This will:
+
+   - Deploy the new implementation contract
+   - Call `upgradeTo()` on the proxy to point to the new implementation
+   - Update `IMPLEMENTATION_ADDRESS` in your .env
+
+2. **Verify Upgrade:**
+   - Check that the proxy is pointing to the new implementation
+   - Verify that existing state is preserved
+   - Test new functionality through the proxy address
+
+### Important Notes
+
+- Always test upgrades on a local network first
+- Keep track of all implementation addresses for future reference
+- The proxy address remains constant across upgrades
+- All user interactions should always use the proxy address
+- State is preserved in the proxy during upgrades
+
+### Deployment Configuration
+
+Make sure your `.env` file is properly configured before deployment:
+
+```bash
+# Required for deployment
+PRIVATE_KEY=your_private_key
+SEPOLIA_RPC_URL=your_rpc_url
+TOKEN_ADDRESS=your_token_address
+
+# Optional for verification
+ETHERSCAN_API_KEY=your_api_key
+```
+
+### Post-Deployment Verification
+
+After deployment or upgrade:
+
+1. **Verify Implementation:**
+
    ```bash
-   # After making changes to the implementation
-   make upgrade-proxy-local    # For local testing (updates IMPLEMENTATION_ADDRESS)
-   make upgrade-proxy-sepolia  # For testnet (updates IMPLEMENTATION_ADDRESS)
+   # Get the implementation address from the proxy
+   cast implementation <PROXY_ADDRESS>
    ```
 
-### Best Practices & Security
+2. **Verify Initialization:**
 
-#### Environment Management
+   ```bash
+   # Check if the token address is set correctly
+   cast call <PROXY_ADDRESS> "token()" --rpc-url <RPC_URL>
+   ```
 
-- Keep `.env` file secure and never commit it
-- Use `.env.example` as a template for required variables
-- Contract addresses are automatically tracked in `.env`
-- Verify environment variables before deployment
-- Use the provided Makefile commands for consistent deployment
-
-#### Proxy Pattern Best Practices
-
-- Always interact with the proxy address, not the implementation
-- Keep track of both proxy and implementation addresses
-- Test upgrades thoroughly before deploying to mainnet
-- Use proper initialization through the proxy
-- Never initialize the implementation contract directly
-
-#### Security Considerations
-
-- **Secure Credentials:** Never commit your `.env` file or expose private keys
-- **Proxy Safety:** Ensure proper access controls for upgrades
-- **Device ID Management:** Ensure unique device IDs for wallet identification
-- **Withdrawal Controls:** Strict validation of withdrawal addresses and amounts
-- **Emergency Recovery:** Token recovery system for contract owner
-- **Automated Verification:** Etherscan verification in deployment process
-
-### Development Guidelines
-
-- **Testing:** Write comprehensive tests for all wallet functions
-- **Gas Optimization:** Monitor gas usage with `make test-gas`
-- **Code Style:** Use `make format` before committing
-- **Dependencies:** Document any new dependencies added
-
-### CI/CD Pipeline
-
-- Automated testing on pull requests
-- Security analysis
-- Gas usage monitoring
-- Testnet deployment verification
+3. **Verify Ownership:**
+   ```bash
+   # Check if ownership is set correctly
+   cast call <PROXY_ADDRESS> "owner()" --rpc-url <RPC_URL>
+   ```
 
 ## Contributing
 
