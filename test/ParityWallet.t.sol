@@ -3,10 +3,13 @@ pragma solidity ^0.8.28;
 
 import "forge-std/Test.sol";
 import "../src/ParityWallet.sol";
+import "../src/ParityWalletProxy.sol";
 import "./mocks/MockToken.sol";
 
 contract ParityWalletTest is Test {
+    ParityWallet public implementation;
     ParityWallet public wallet;
+    ParityWalletProxy public proxy;
     MockToken public token;
     address public owner;
     address public user;
@@ -20,9 +23,17 @@ contract ParityWalletTest is Test {
         // Deploy mock token
         token = new MockToken();
 
-        // Deploy and initialize wallet
-        wallet = new ParityWallet();
-        wallet.initialize(address(token));
+        // Deploy implementation
+        implementation = new ParityWallet();
+
+        // Prepare initialization data
+        bytes memory initData = abi.encodeWithSelector(ParityWallet.initialize.selector, address(token));
+
+        // Deploy proxy with implementation and initialization
+        proxy = new ParityWalletProxy(address(implementation), initData);
+
+        // Cast proxy to ParityWallet for easier interaction
+        wallet = ParityWallet(address(proxy));
 
         // Give user some tokens
         token.mint(user, 1000 ether);
@@ -38,19 +49,9 @@ contract ParityWalletTest is Test {
         wallet.addFunds(depositAmount, "test_device_1", user);
         vm.stopPrank();
 
-        (uint256 balance, , , bool exists) = wallet.getWalletInfo(
-            "test_device_1"
-        );
-        assertEq(
-            balance,
-            depositAmount,
-            "Incorrect wallet balance after deposit"
-        );
-        assertEq(
-            token.balanceOf(user),
-            1000 ether - depositAmount,
-            "Incorrect user balance after deposit"
-        );
+        (uint256 balance,,, bool exists) = wallet.getWalletInfo("test_device_1");
+        assertEq(balance, depositAmount, "Incorrect wallet balance after deposit");
+        assertEq(token.balanceOf(user), 1000 ether - depositAmount, "Incorrect user balance after deposit");
         assertTrue(exists, "Wallet should exist");
     }
 
@@ -67,14 +68,8 @@ contract ParityWalletTest is Test {
         wallet.withdrawFunds("test_device_1", withdrawAmount);
         vm.stopPrank();
 
-        (uint256 balance, , , bool exists) = wallet.getWalletInfo(
-            "test_device_1"
-        );
-        assertEq(
-            balance,
-            depositAmount - withdrawAmount,
-            "Incorrect wallet balance after withdrawal"
-        );
+        (uint256 balance,,, bool exists) = wallet.getWalletInfo("test_device_1");
+        assertEq(balance, depositAmount - withdrawAmount, "Incorrect wallet balance after withdrawal");
         assertEq(
             token.balanceOf(user),
             1000 ether - depositAmount + withdrawAmount,

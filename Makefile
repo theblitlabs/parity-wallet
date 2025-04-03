@@ -65,6 +65,7 @@ deploy-proxy-sepolia: check-env
 		--private-key ${PRIVATE_KEY} \
 		--broadcast \
 		--verify \
+		--ffi \
 		-vvvv
 
 upgrade-proxy-local:

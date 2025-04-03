@@ -13,6 +13,7 @@ This repository contains an upgradeable smart contract wallet implementation for
 - **Deployment Scripts**: Ready-to-use scripts for both local development and testnet deployments
 - **Etherscan Verification**: Automatic integration for contract source verification
 - **Environment Management**: Uses environment variables for secure handling of sensitive configurations
+- **Auto-updating Addresses**: Automatically tracks deployed contract addresses in .env
 
 ## Prerequisites
 
@@ -40,6 +41,8 @@ This repository contains an upgradeable smart contract wallet implementation for
    The project uses git submodules for dependency management:
 
    - `forge-std`: Foundry's standard library for testing and scripting
+   - `openzeppelin-contracts`: For secure contract implementations
+   - `openzeppelin-contracts-upgradeable`: For upgradeable contract patterns
      Dependencies are pinned to specific commits for reproducible builds.
 
 3. **Updating Dependencies:**
@@ -50,16 +53,27 @@ This repository contains an upgradeable smart contract wallet implementation for
    ```
 
 4. **Configure Environment Variables:**
+
    - Copy the environment template:
      ```bash
      cp .env.example .env
      ```
-   - Update `.env` with your credentials:
-     ```
-     PRIVATE_KEY="your wallet private key"
-     SEPOLIA_RPC_URL="your RPC URL"
-     TOKEN_ADDRESS="your token contract address"
-     PROXY_ADDRESS="your proxy address (needed for upgrades)"
+   - Required variables in `.env`:
+
+     ```bash
+     # RPC Endpoints (required)
+     SEPOLIA_RPC_URL=                       # Example: https://1rpc.io/sepolia
+
+     # Deployment Account (required)
+     PRIVATE_KEY=                           # Your private key (with 0x prefix)
+
+     # Contract Addresses (required)
+     TOKEN_ADDRESS=                         # The ERC20 token contract address
+     PROXY_ADDRESS=                         # The proxy contract address (required for upgrades)
+     IMPLEMENTATION_ADDRESS=                # The current implementation contract address (auto-updated)
+
+     # Verification (optional)
+     ETHERSCAN_API_KEY=                    # For contract verification on Etherscan
      ```
 
 ## Documentation
@@ -108,14 +122,10 @@ $ make upgrade-proxy-local
 $ make upgrade-proxy-sepolia
 ```
 
-Note: For testnet deployments, ensure your `.env` file is properly configured with:
+Note: The deployment scripts will automatically update your `.env` file with the newly deployed contract addresses:
 
-```env
-SEPOLIA_RPC_URL="your RPC URL"
-PRIVATE_KEY="your wallet private key"
-TOKEN_ADDRESS="your token contract address"
-PROXY_ADDRESS="your proxy address (needed for upgrades)"
-```
+- `PROXY_ADDRESS`: Updated when deploying a new proxy
+- `IMPLEMENTATION_ADDRESS`: Updated when deploying or upgrading the implementation
 
 ## Contract Architecture
 
@@ -188,7 +198,7 @@ This project uses [Git Submodules](https://git-scm.com/book/en/v2/Git-Tools-Subm
    # Start local node
    make anvil
 
-   # Deploy with proxy locally
+   # Deploy with proxy locally (uses --ffi to update .env)
    make deploy-proxy-local
    ```
 
@@ -208,11 +218,19 @@ This project uses [Git Submodules](https://git-scm.com/book/en/v2/Git-Tools-Subm
 3. **Upgrading Contract:**
    ```bash
    # After making changes to the implementation
-   make upgrade-proxy-local    # For local testing
-   make upgrade-proxy-sepolia  # For testnet
+   make upgrade-proxy-local    # For local testing (updates IMPLEMENTATION_ADDRESS)
+   make upgrade-proxy-sepolia  # For testnet (updates IMPLEMENTATION_ADDRESS)
    ```
 
 ### Best Practices & Security
+
+#### Environment Management
+
+- Keep `.env` file secure and never commit it
+- Use `.env.example` as a template for required variables
+- Contract addresses are automatically tracked in `.env`
+- Verify environment variables before deployment
+- Use the provided Makefile commands for consistent deployment
 
 #### Proxy Pattern Best Practices
 
