@@ -46,9 +46,9 @@ contract DeployScript is Script {
         console.log("Implementation deployed to:", address(implementation));
         console.log("Proxy deployed to:", address(proxy));
 
-        // Save proxy address to .env if not in CI
+        // Save addresses to .env if not in CI
         if (!isCI) {
-            _saveProxyAddress(address(proxy));
+            _saveAddresses(address(proxy), address(implementation));
         }
 
         // Deployment verification instructions
@@ -123,16 +123,28 @@ contract DeployScript is Script {
         }
     }
 
-    function _saveProxyAddress(address proxy) internal {
-        string[] memory inputs = new string[](4);
-        inputs[0] = "bash";
-        inputs[1] = "-c";
-        inputs[2] = string.concat("sed -i '' 's/^PROXY_ADDRESS=.*$/PROXY_ADDRESS=", vm.toString(proxy), "/' .env");
+    function _saveAddresses(address proxy, address implementation) internal {
+        string[] memory proxyInputs = new string[](4);
+        proxyInputs[0] = "bash";
+        proxyInputs[1] = "-c";
+        proxyInputs[2] = string.concat("sed -i '' 's/^PROXY_ADDRESS=.*$/PROXY_ADDRESS=", vm.toString(proxy), "/' .env");
 
-        try vm.ffi(inputs) {
+        string[] memory implInputs = new string[](4);
+        implInputs[0] = "bash";
+        implInputs[1] = "-c";
+        implInputs[2] = string.concat(
+            "sed -i '' 's/^IMPLEMENTATION_ADDRESS=.*$/IMPLEMENTATION_ADDRESS=", vm.toString(implementation), "/' .env"
+        );
+
+        try vm.ffi(proxyInputs) {
             console.log("Proxy address saved to .env");
+            try vm.ffi(implInputs) {
+                console.log("Implementation address saved to .env");
+            } catch {
+                console.log("Warning: Could not save implementation address to .env");
+            }
         } catch {
-            console.log("Warning: Could not save proxy address to .env");
+            console.log("Warning: Could not save addresses to .env");
         }
     }
 }

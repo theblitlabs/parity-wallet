@@ -50,6 +50,7 @@ deploy-sepolia: check-env
 		--private-key ${PRIVATE_KEY} \
 		--broadcast \
 		--verify \
+		--ffi \
 		-vvvv
 
 # Proxy deployment and upgrade commands

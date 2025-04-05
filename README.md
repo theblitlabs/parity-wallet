@@ -15,6 +15,12 @@ This repository contains an upgradeable smart contract wallet implementation for
 - **Environment Management**: Uses environment variables for secure handling of sensitive configurations
 - **Auto-updating Addresses**: Automatically tracks deployed contract addresses in .env
 
+## Deployed Contracts
+
+The contract is currently deployed on Sepolia testnet:
+
+- **Proxy Address**: `0x261259e9467E042DBBF372906e17b94fC06942f2` (Use this address for all interactions)
+
 ## Prerequisites
 
 - [Foundry](https://book.getfoundry.sh/getting-started/installation.html) installed
