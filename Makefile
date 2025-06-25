@@ -43,16 +43,6 @@ deploy-local:
 		--broadcast \
 		--ffi
 
-# Network deployments (with verification)
-deploy-sepolia: check-env
-	forge script script/Deploy.s.sol:DeployScript \
-		--rpc-url ${SEPOLIA_RPC_URL} \
-		--private-key ${PRIVATE_KEY} \
-		--broadcast \
-		--verify \
-		--ffi \
-		-vvvv
-
 # Proxy deployment and upgrade commands
 deploy-proxy-local:
 	forge script script/DeployProxy.s.sol:DeployProxyScript \
@@ -60,33 +50,62 @@ deploy-proxy-local:
 		--broadcast \
 		--ffi
 
-deploy-proxy-sepolia: check-env
-	forge script script/DeployProxy.s.sol:DeployProxyScript \
-		--rpc-url ${SEPOLIA_RPC_URL} \
-		--private-key ${PRIVATE_KEY} \
-		--broadcast \
-		--verify \
-		--ffi \
-		-vvvv
-
 upgrade-proxy-local:
 	forge script script/UpgradeWallet.s.sol:UpgradeScript \
 		--rpc-url http://localhost:8545 \
 		--broadcast \
 		--ffi
 
-upgrade-proxy-sepolia: check-env
-	forge script script/UpgradeWallet.s.sol:UpgradeScript \
-		--rpc-url ${SEPOLIA_RPC_URL} \
+# Filecoin deployment commands
+deploy-filecoin-calibration: check-env check-token
+	forge script script/Deploy.s.sol:DeployScript \
+		--rpc-url ${FILECOIN_CALIBRATION_RPC_URL} \
 		--private-key ${PRIVATE_KEY} \
 		--broadcast \
-		--verify \
+		--skip-simulation \
+		-vvvv
+
+deploy-filecoin-mainnet: check-env check-token
+	forge script script/Deploy.s.sol:DeployScript \
+		--rpc-url ${FILECOIN_MAINNET_RPC_URL} \
+		--private-key ${PRIVATE_KEY} \
+		--broadcast \
+		--skip-simulation \
+		-vvvv
+
+upgrade-filecoin-calibration: check-env check-proxy
+	forge script script/UpgradeWallet.s.sol:UpgradeScript \
+		--rpc-url ${FILECOIN_CALIBRATION_RPC_URL} \
+		--private-key ${PRIVATE_KEY} \
+		--broadcast \
+		--skip-simulation \
+		-vvvv
+
+upgrade-filecoin-mainnet: check-env check-proxy
+	forge script script/UpgradeWallet.s.sol:UpgradeScript \
+		--rpc-url ${FILECOIN_MAINNET_RPC_URL} \
+		--private-key ${PRIVATE_KEY} \
+		--broadcast \
+		--skip-simulation \
 		-vvvv
 
 # Environment checks
 check-env:
 	@if [ -z "${PRIVATE_KEY}" ]; then \
 		echo "Error: PRIVATE_KEY is required for network deployment"; \
+		exit 1; \
+	fi
+
+check-token:
+	@if [ -z "${TOKEN_ADDRESS}" ]; then \
+		echo "Error: TOKEN_ADDRESS is required for deployment"; \
+		echo "Please set TOKEN_ADDRESS=0xb3042734b608a1B16e9e86B374A3f3e389B4cDf0"; \
+		exit 1; \
+	fi
+
+check-proxy:
+	@if [ -z "${PROXY_ADDRESS}" ]; then \
+		echo "Error: PROXY_ADDRESS is required for upgrades"; \
 		exit 1; \
 	fi
 

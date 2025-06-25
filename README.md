@@ -1,6 +1,6 @@
-# Parity Wallet
+# Parity Wallet for Filecoin
 
-This repository contains an upgradeable smart contract wallet implementation for managing token deposits, transfers, and withdrawals. The project is built with [Foundry](https://book.getfoundry.sh/) and leverages secure development practices for robust wallet management.
+This repository contains an upgradeable smart contract wallet implementation for managing token deposits, transfers, and withdrawals on Filecoin networks. The project is built with [Foundry](https://book.getfoundry.sh/) and leverages secure development practices for robust wallet management on both Filecoin Calibration testnet and Mainnet.
 
 ## Features
 
@@ -17,9 +17,11 @@ This repository contains an upgradeable smart contract wallet implementation for
 
 ## Deployed Contracts
 
-The contract is currently deployed on Sepolia testnet:
+### Filecoin Calibration Testnet
 
-- **Proxy Address**: `0x261259e9467E042DBBF372906e17b94fC06942f2` (Use this address for all interactions)
+- **Proxy Address**: `0x7465E7a637f66cb7b294B856A25bc84aBfF1d247` (Use this address for all interactions)
+- **Implementation Address**: `0xb313488120e72F1217453a62AD825d90b0542cFC`
+- **Token Address**: `0xb3042734b608a1B16e9e86B374A3f3e389B4cDf0`
 
 ## Prerequisites
 
@@ -68,7 +70,8 @@ The contract is currently deployed on Sepolia testnet:
 
      ```bash
      # RPC Endpoints (required)
-     SEPOLIA_RPC_URL=                       # Example: https://1rpc.io/sepolia
+     FILECOIN_CALIBRATION_RPC_URL=          # Example: https://api.calibration.node.glif.io/rpc/v1
+     FILECOIN_MAINNET_RPC_URL=              # Example: https://api.node.glif.io/rpc/v1
 
      # Deployment Account (required)
      PRIVATE_KEY=                           # Your private key (with 0x prefix)
@@ -77,9 +80,6 @@ The contract is currently deployed on Sepolia testnet:
      TOKEN_ADDRESS=                         # The ERC20 token contract address
      PROXY_ADDRESS=                         # The proxy contract address (required for upgrades)
      IMPLEMENTATION_ADDRESS=                # The current implementation contract address (auto-updated)
-
-     # Verification (optional)
-     ETHERSCAN_API_KEY=                    # For contract verification on Etherscan
      ```
 
 ## Documentation
@@ -118,14 +118,20 @@ $ make anvil
 # Deploy to local network with proxy
 $ make deploy-proxy-local
 
-# Deploy to Sepolia testnet with proxy
-$ make deploy-proxy-sepolia
+# Deploy to Filecoin Calibration testnet
+$ make deploy-filecoin-calibration
+
+# Deploy to Filecoin Mainnet
+$ make deploy-filecoin-mainnet
 
 # Upgrade implementation on local network
 $ make upgrade-proxy-local
 
-# Upgrade implementation on Sepolia testnet
-$ make upgrade-proxy-sepolia
+# Upgrade implementation on Filecoin Calibration
+$ make upgrade-filecoin-calibration
+
+# Upgrade implementation on Filecoin Mainnet
+$ make upgrade-filecoin-mainnet
 ```
 
 Note: The deployment scripts will automatically update your `.env` file with the newly deployed contract addresses:
@@ -205,31 +211,246 @@ This project uses [Git Submodules](https://git-scm.com/book/en/v2/Git-Tools-Subm
    make anvil
    ```
 
-## Deployment Steps
+## Deployment Guide
 
-### Initial Deployment
+This project supports deployment to Filecoin networks (Calibration testnet and Mainnet). Below are detailed instructions for each deployment method.
 
-1. **Deploy the Implementation and Proxy:**
+### Prerequisites
+
+Before deploying, ensure you have:
+
+1. **Foundry installed** - [Installation guide](https://book.getfoundry.sh/getting-started/installation.html)
+2. **Private key with sufficient gas tokens**:
+   - For Filecoin Calibration: tFIL from [Calibration faucet](https://faucet.calibration.fildev.network)
+   - For Filecoin Mainnet: FIL tokens
+3. **Token contract address** for the wallet to manage
+4. **Filecoin RPC endpoint** for your target network
+
+### Method 1: Using Deployment Scripts (Recommended)
+
+#### Step 1: Configure Environment
+
+1. **Copy the environment template:**
 
    ```bash
-   # For local development
-   make deploy-proxy-local
-
-   # For Sepolia testnet
-   make deploy-proxy-sepolia
+   cp .env.example .env
    ```
 
-   This will:
+2. **Edit `.env` with your configuration:**
 
-   - Deploy the ParityWallet implementation contract
-   - Deploy the UUPS proxy
-   - Initialize the proxy with your token address
-   - Update your .env with the new addresses
+   ```bash
+   # For Filecoin Calibration
+   FILECOIN_CALIBRATION_RPC_URL=https://api.calibration.node.glif.io/rpc/v1
+   PRIVATE_KEY=0x27087208dce7240c053effc3b6e696a5e8dc1a2da5ef0a180f82aff979864bf3
+   TOKEN_ADDRESS=0xb3042734b608a1B16e9e86B374A3f3e389B4cDf0
 
-2. **Verify Deployment:**
-   - The proxy address will be saved as `PROXY_ADDRESS` in your .env
-   - The implementation address will be saved as `IMPLEMENTATION_ADDRESS`
-   - All user interactions should be done through the `PROXY_ADDRESS`
+   # For Filecoin Mainnet
+   FILECOIN_MAINNET_RPC_URL=https://api.node.glif.io/rpc/v1
+   PRIVATE_KEY=0x27087208dce7240c053effc3b6e696a5e8dc1a2da5ef0a180f82aff979864bf3
+   TOKEN_ADDRESS=0x...
+   ```
+
+#### Step 2: Deploy to Filecoin Networks
+
+**For Local Development:**
+
+```bash
+# Start local node
+make anvil
+
+# Deploy proxy system
+make deploy-proxy-local
+```
+
+**For Filecoin Networks:**
+
+```bash
+# Using Makefile (recommended)
+make deploy-filecoin-calibration    # For Calibration testnet
+make deploy-filecoin-mainnet        # For Mainnet
+
+# Or using script deployment directly
+export PRIVATE_KEY='0x27087208dce7240c053effc3b6e696a5e8dc1a2da5ef0a180f82aff979864bf3'
+export TOKEN_ADDRESS='0xb3042734b608a1B16e9e86B374A3f3e389B4cDf0'
+
+# Deploy to Filecoin Calibration
+forge script script/Deploy.s.sol:DeployScript \
+  --rpc-url https://api.calibration.node.glif.io/rpc/v1 \
+  --broadcast --skip-simulation
+
+# Deploy to Filecoin Mainnet
+forge script script/Deploy.s.sol:DeployScript \
+  --rpc-url https://api.node.glif.io/rpc/v1 \
+  --broadcast --skip-simulation
+```
+
+### Method 2: Manual Contract Deployment
+
+For more control or troubleshooting, you can deploy contracts individually:
+
+#### Step 1: Build Contracts
+
+```bash
+forge build
+```
+
+#### Step 2: Deploy Implementation Contract
+
+```bash
+# Set environment variables
+export PRIVATE_KEY='0x...'
+
+# Deploy ParityWallet implementation
+forge create \
+  --rpc-url https://api.calibration.node.glif.io/rpc/v1 \
+  --private-key $PRIVATE_KEY \
+  src/ParityWallet.sol:ParityWallet \
+  --broadcast
+
+# Save the deployed implementation address (e.g., 0xb313488120e72F1217453a62AD825d90b0542cFC)
+```
+
+#### Step 3: Deploy Proxy Contract
+
+```bash
+# Set variables
+IMPLEMENTATION_ADDRESS=0xb313488120e72F1217453a62AD825d90b0542cFC
+TOKEN_ADDRESS=0xb3042734b608a1B16e9e86B374A3f3e389B4cDf0
+
+# Create initialization data (encode initialize function call)
+INIT_DATA=$(cast calldata "initialize(address)" $TOKEN_ADDRESS)
+
+# Deploy proxy with initialization
+forge create \
+  --rpc-url https://api.calibration.node.glif.io/rpc/v1 \
+  --private-key $PRIVATE_KEY \
+  src/ParityWalletProxy.sol:ParityWalletProxy \
+  --constructor-args $IMPLEMENTATION_ADDRESS $INIT_DATA \
+  --broadcast
+
+# Save the deployed proxy address (e.g., 0x7465E7a637f66cb7b294B856A25bc84aBfF1d247)
+```
+
+### Deployment Verification
+
+After deployment, verify the contracts are working correctly:
+
+#### 1. Check Implementation Address
+
+```bash
+# Verify proxy points to correct implementation
+cast implementation 0x7465E7a637f66cb7b294B856A25bc84aBfF1d247 \
+  --rpc-url https://api.calibration.node.glif.io/rpc/v1
+```
+
+#### 2. Check Token Address
+
+```bash
+# Verify token address is set correctly
+cast call 0x7465E7a637f66cb7b294B856A25bc84aBfF1d247 "token()" \
+  --rpc-url https://api.calibration.node.glif.io/rpc/v1
+```
+
+#### 3. Check Owner
+
+```bash
+# Verify deployer is the owner
+cast call 0x7465E7a637f66cb7b294B856A25bc84aBfF1d247 "owner()" \
+  --rpc-url https://api.calibration.node.glif.io/rpc/v1
+```
+
+### Network-Specific Configuration
+
+#### Filecoin Networks
+
+**Calibration Testnet:**
+
+- **Chain ID**: 314159
+- **RPC URL**: `https://api.calibration.node.glif.io/rpc/v1`
+- **Explorer**: [Filfox Calibration](https://calibration.filfox.info/)
+- **Faucet**: [Calibration Faucet](https://faucet.calibration.fildev.network)
+
+**Filecoin Mainnet:**
+
+- **Chain ID**: 314
+- **RPC URL**: `https://api.node.glif.io/rpc/v1`
+- **Explorer**: [Filfox](https://filfox.info/)
+
+### Troubleshooting Deployment
+
+#### Common Issues and Solutions
+
+1. **Gas Limit Error on Filecoin:**
+
+   ```
+   Error: GasLimit field cannot be less than the cost of storing a message on chain
+   ```
+
+   **Solution**: Filecoin automatically calculates gas. The error usually resolves on retry.
+
+2. **Nonce Behind Error:**
+
+   ```
+   Error: provider nonce (X) is still behind expected nonce (Y)
+   ```
+
+   **Solution**: This is common on Filecoin networks and doesn't affect successful deployment.
+
+3. **Private Key Format:**
+
+   - Ensure private key includes `0x` prefix
+   - Example: `0x27087208dce7240c053effc3b6e696a5e8dc1a2da5ef0a180f82aff979864bf3`
+
+4. **RPC Connection Issues:**
+   - Verify RPC URL is accessible
+   - Try alternative endpoints if available
+   - Check network connectivity
+
+#### Success Indicators
+
+Look for these indicators of successful deployment:
+
+```bash
+✅  [Success] Hash: 0x...
+Contract Address: 0x...
+Block: 12345
+```
+
+The deployment script will output:
+
+```bash
+=== Deployment Successful! ===
+Implementation deployed to: 0x...
+Proxy deployed to: 0x...
+```
+
+### Post-Deployment Steps
+
+1. **Save Contract Addresses:**
+
+   - Update your `.env` file with deployed addresses
+   - Keep a record of both proxy and implementation addresses
+
+2. **Verify on Explorer:**
+
+   - Check transactions on the relevant blockchain explorer
+   - Verify contract creation and initialization
+
+3. **Test Basic Functionality:**
+   ```bash
+   # Test a view function
+   cast call <PROXY_ADDRESS> "token()" --rpc-url <RPC_URL>
+   ```
+
+### Initial Deployment Summary
+
+This process deploys:
+
+- **ParityWallet implementation contract**: Contains the wallet logic
+- **ParityWalletProxy contract**: UUPS proxy that delegates to implementation
+- **Initialization**: Proxy is initialized with the specified token address
+
+The proxy address is what users should interact with, and it remains constant even when the implementation is upgraded.
 
 ### Upgrading the Contract
 
@@ -270,12 +491,47 @@ Make sure your `.env` file is properly configured before deployment:
 
 ```bash
 # Required for deployment
-PRIVATE_KEY=your_private_key
-SEPOLIA_RPC_URL=your_rpc_url
-TOKEN_ADDRESS=your_token_address
+PRIVATE_KEY=0x27087208dce7240c053effc3b6e696a5e8dc1a2da5ef0a180f82aff979864bf3
+TOKEN_ADDRESS=0xb3042734b608a1B16e9e86B374A3f3e389B4cDf0
 
-# Optional for verification
-ETHERSCAN_API_KEY=your_api_key
+# Filecoin Network RPC URLs
+FILECOIN_CALIBRATION_RPC_URL=https://api.calibration.node.glif.io/rpc/v1
+FILECOIN_MAINNET_RPC_URL=https://api.node.glif.io/rpc/v1
+
+# Contract addresses (auto-updated after deployment)
+PROXY_ADDRESS=0x7465E7a637f66cb7b294B856A25bc84aBfF1d247
+IMPLEMENTATION_ADDRESS=0xb313488120e72F1217453a62AD825d90b0542cFC
+```
+
+### Quick Deployment Examples
+
+**Deploy to Filecoin Calibration (Recommended for testing):**
+
+```bash
+# 1. Set environment variables
+export PRIVATE_KEY='0x27087208dce7240c053effc3b6e696a5e8dc1a2da5ef0a180f82aff979864bf3'
+export TOKEN_ADDRESS='0xb3042734b608a1B16e9e86B374A3f3e389B4cDf0'
+export FILECOIN_CALIBRATION_RPC_URL='https://api.calibration.node.glif.io/rpc/v1'
+
+# 2. Deploy using Makefile
+make deploy-filecoin-calibration
+
+# 3. Or deploy using script directly
+forge script script/Deploy.s.sol:DeployScript \
+  --rpc-url https://api.calibration.node.glif.io/rpc/v1 \
+  --broadcast --skip-simulation
+```
+
+**Deploy to Filecoin Mainnet:**
+
+```bash
+# 1. Set environment variables
+export PRIVATE_KEY='0x27087208dce7240c053effc3b6e696a5e8dc1a2da5ef0a180f82aff979864bf3'
+export TOKEN_ADDRESS='0x...'  # Your mainnet token address
+export FILECOIN_MAINNET_RPC_URL='https://api.node.glif.io/rpc/v1'
+
+# 2. Deploy using Makefile
+make deploy-filecoin-mainnet
 ```
 
 ### Post-Deployment Verification
