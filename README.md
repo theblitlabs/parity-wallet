@@ -1,19 +1,42 @@
-# Parity Wallet for Filecoin
+# Parity Wallet
 
-This repository contains an upgradeable smart contract wallet implementation for managing token deposits, transfers, and withdrawals on Filecoin networks. The project is built with [Foundry](https://book.getfoundry.sh/) and leverages secure development practices for robust wallet management on both Filecoin Calibration testnet and Mainnet.
+The smart contract infrastructure for the PLGenesis decentralized AI and compute network. Parity Wallet provides secure token economics, staking mechanisms, and payment processing for LLM inference and compute task execution. Built with Foundry and deployed on Filecoin for transparent and decentralized financial operations.
 
-## Features
+## 🚀 Features
 
-- **Upgradeable Contract**: Uses UUPS proxy pattern for future upgrades
-- **Wallet Management**: Secure implementation for managing token deposits and withdrawals
-- **Device-based Identification**: Unique device IDs for wallet identification
-- **Transfer System**: Secure transfer mechanism between wallets
-- **Address Management**: Update withdrawal addresses for enhanced security
-- **Token Recovery**: Emergency token recovery functionality for contract owner
-- **Deployment Scripts**: Ready-to-use scripts for both local development and testnet deployments
-- **Etherscan Verification**: Automatic integration for contract source verification
-- **Environment Management**: Uses environment variables for secure handling of sensitive configurations
-- **Auto-updating Addresses**: Automatically tracks deployed contract addresses in .env
+### 💰 Token Economics
+
+- **PRTY Token**: Native utility token for network operations
+- **Staking Mechanism**: Stake tokens to participate as a runner
+- **Reward Distribution**: Automatic payments for completed tasks and LLM inference
+- **Billing System**: Usage-based billing for LLM services
+
+### 🔒 Security & Upgradability
+
+- **Upgradeable Contracts**: UUPS proxy pattern for future enhancements
+- **Multi-signature Support**: Enhanced security for critical operations
+- **Emergency Recovery**: Token recovery mechanisms for edge cases
+- **Audit-ready Code**: Built with OpenZeppelin's battle-tested libraries
+
+### 🌐 Network Integration
+
+- **Filecoin Compatibility**: Native integration with Filecoin ecosystem
+- **Device-based Identity**: Unique device IDs for runner identification
+- **Cross-chain Ready**: Architecture supports future multi-chain expansion
+- **Gas Optimization**: Efficient contract design for lower transaction costs
+
+## 🛠️ Technical Features
+
+- **Upgradeable Architecture**: Uses UUPS proxy pattern for seamless upgrades
+- **Secure Wallet Management**: Robust implementation for token deposits and withdrawals
+- **Device-based Identity**: Unique device IDs for runner wallet identification
+- **Payment Processing**: Efficient transfer mechanisms for task and LLM payments
+- **Address Management**: Flexible withdrawal address configuration
+- **Emergency Recovery**: Owner-controlled token recovery for edge cases
+- **Automated Deployment**: Scripts for local development and production deployments
+- **Contract Verification**: Automatic Etherscan/Explorer verification
+- **Environment Security**: Secure handling of sensitive configurations
+- **Address Tracking**: Automatic updates of deployed contract addresses
 
 ## Deployed Contracts
 
